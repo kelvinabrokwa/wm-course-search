@@ -80,7 +80,8 @@ class App extends React.Component {
     const { data, filters, semester } = this.state;
     let filteredData = JSON.parse(JSON.stringify(data));
     for (let filter in filters) {
-      filteredData[semester] = filters[filter].func(filteredData[semester], filters[filter].query);
+      if (filteredData[semester])
+        filteredData[semester] = filters[filter].func(filteredData[semester], filters[filter].query);
     }
     this.setState({ filteredData });
   }
@@ -106,7 +107,7 @@ class App extends React.Component {
       allAttributes,
     } = this.state;
 
-    return (<div className='container'>
+    return (<div className='container mb2'>
 
       <div style={{ borderBottom: '#000 1px solid' }}>
         <div className='center'>
@@ -114,38 +115,50 @@ class App extends React.Component {
         </div>
       </div>
 
-      <div className='row'>
+      <div className='row mt1'>
 
-        <div className='input-field col s12 m6 l6'>
-          <select className='browser-default' onChange={this.onSemesterChange.bind(this)}>
-            {Object.keys(data).map((semester, i) => <option key={i} value={semester}>
-              {semester}
-            </option>)}
-          </select>
+        <div className='col s12 m6 l6 mb1'>
+          <div>Semester</div>
+          <div className='input-field'>
+            <select className='browser-default' onChange={this.onSemesterChange.bind(this)}>
+              {Object.keys(data).map((semester, i) => <option key={i} value={semester}>
+                {semester}
+              </option>)}
+            </select>
+          </div>
         </div>
 
-        <div className='input-field col s12 m6 l6'>
-          <select className='browser-default' onChange={this.onFilter.bind(this, 'status')}>
-            <option value={'null'}>ALL</option>
-            {data[semester] && data[semester]
-              .map(course => course['STATUS'])
-              .filter((el, i, self) => i === self.indexOf(el))
-              .map((status, i) => <option key={i} value={status}>{status}</option>)}
-          </select>
+        <div className='col s12 m6 l6 mb1'>
+          <div>Subject</div>
+          <div className='input-field'>
+            <select className='browser-default' onChange={this.onFilter.bind(this, 'subject')}>
+              <option value={'null'}>ALL</option>
+              {allSubjects.map((subject, i) => <option key={i} value={subject}>{subject}</option>)}
+            </select>
+          </div>
         </div>
 
-        <div className='input-field col s12 m6 l6'>
-          <select className='browser-default' onChange={this.onFilter.bind(this, 'attributes')}>
-            <option value={'null'}>Any</option>
-            {allAttributes.map((attr, i) => <option key={i} value={attr}>{attr}</option>)}
-          </select>
+        <div className='col s12 m6 l6 mb1'>
+          <div>Status</div>
+          <div className='input-field'>
+            <select className='browser-default' onChange={this.onFilter.bind(this, 'status')}>
+              <option value={'null'}>ALL</option>
+              {data[semester] && data[semester]
+                .map(course => course['STATUS'])
+                .filter((el, i, self) => i === self.indexOf(el))
+                .map((status, i) => <option key={i} value={status}>{status}</option>)}
+            </select>
+          </div>
         </div>
 
-        <div className='input-field col s12 m6 l6'>
-          <select className='browser-default' onChange={this.onFilter.bind(this, 'subject')}>
-            <option value={'null'}>ALL</option>
-            {allSubjects.map((subject, i) => <option key={i} value={subject}>{subject}</option>)}
-          </select>
+        <div className='col s12 m6 l6 mb1'>
+          <div>Attribute</div>
+          <div className='input-field'>
+            <select className='browser-default' onChange={this.onFilter.bind(this, 'attributes')}>
+              <option value={'null'}>Any</option>
+              {allAttributes.map((attr, i) => <option key={i} value={attr}>{attr}</option>)}
+            </select>
+          </div>
         </div>
 
       </div>
