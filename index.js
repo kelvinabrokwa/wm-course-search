@@ -1,18 +1,19 @@
 /**
- *
+ * the app
  */
 const flatten = data => {
   for (let semester in data) {
     data[semester] = [].concat.apply([], Object.keys(data[semester]).map(subject =>
       [].concat.apply([], Object.keys(data[semester][subject]).map(level =>
-        [].concat.apply([], Object.keys(data[semester][subject][level]).map(section =>
+        Object.keys(data[semester][subject][level]).map(section =>
           data[semester][subject][level][section]
-        ))
+        )
       ))
     ));
   }
   return data;
 };
+
 
 class App extends React.Component {
 
@@ -30,13 +31,13 @@ class App extends React.Component {
           query: null,
           func: (data, query) => data.filter(course => query ? course['STATUS'] === query : true)
         },
-        subject: {
-          query: null,
-          func: (data, query) => data.filter(course => query ? course.dept === query : true)
+        subjects: {
+          query: [],
+          func: (data, query) => data.filter(course => query.length ? query.some(subject => subject === course.dept) : true)
         },
         attributes: {
-          query: null,
-          func: (data, query) => data.filter(course => query ? course['CRSE ATTR'].includes(query) : true)
+          query: [],
+          func: (data, query) => data.filter(course => query.length ? query.reduce((p, c) => p && course['CRSE ATTR'].includes(c), true) : true)
         },
         title: {
           query: null,
@@ -48,6 +49,7 @@ class App extends React.Component {
     this.filter = this.filter.bind(this);
     this.onFilter = this.onFilter.bind(this);
     this.loadPage = this.loadPage.bind(this);
+    this.removeFilter = this.removeFilter.bind(this);
   }
 
   componentDidMount() {
@@ -88,12 +90,25 @@ class App extends React.Component {
 
   onFilter(filter, e) {
     const { filters } = this.state;
-    filters[filter].query = e.target.value === 'null' ? null : e.target.value;
+    if (Array.isArray(filters[filter].query)) {
+      if (e.target.value !== 'null')
+        filters[filter].query.push(e.target.value);
+      else
+        filters[filter].query = [];
+    } else {
+      filters[filter].query = e.target.value === 'null' ? null : e.target.value;
+    }
     this.setState({ filters }, this.filter);
   }
 
   loadPage() {
     this.setState({ pages: ++this.state.pages });
+  }
+
+  removeFilter(filter, query) {
+    const { filters } = this.state;
+    filters[filter].query = filters[filter].query.filter(q => q !== query);
+    this.setState({ filters }, this.filter);
   }
 
   render() {
@@ -115,6 +130,7 @@ class App extends React.Component {
         </div>
       </div>
 
+
       <div className='row mt1'>
 
         <div className='col s12 m6 l6 mb1'>
@@ -131,7 +147,7 @@ class App extends React.Component {
         <div className='col s12 m6 l6 mb1'>
           <div>Subject</div>
           <div className='input-field'>
-            <select className='browser-default' onChange={this.onFilter.bind(this, 'subject')}>
+            <select className='browser-default' onChange={this.onFilter.bind(this, 'subjects')}>
               <option value={'null'}>ALL</option>
               {allSubjects.map((subject, i) => <option key={i} value={subject}>{subject}</option>)}
             </select>
@@ -163,13 +179,28 @@ class App extends React.Component {
 
       </div>
 
+
+      {/* Search bar */}
       <div className='row'>
         <div className='input-field col s12 m8 l6 offset-m2 offset-l3'>
-          <input type='text' onChange={this.onFilter.bind(this, 'title')} />
-          <label>Search for a class</label>
+          <input id='search' type='text' onChange={this.onFilter.bind(this, 'title')} />
+          <label htmlFor='search'>Search for a class</label>
         </div>
       </div>
 
+
+      {/* Filters */}
+      <div>
+        {Object.keys(filters).filter(filter => filters[filter].query && Array.isArray(filters[filter].query)).map((filter, i) => <div key={i} className='flex-container'>
+          {filters[filter].query.map((query, i) => <div key={i} className='valign-wrapper mr1 pr1 border mb1'>
+            <i className='material-icons hover-red clickable valign' onClick={this.removeFilter.bind(this, filter, query)}>close</i>
+            <span>{query}</span>
+          </div>)}
+        </div>)}
+      </div>
+
+
+      {/* table */}
       <div>
         <table className='striped'>
           <thead>
@@ -208,8 +239,8 @@ class App extends React.Component {
       </div>
 
       <div className='center'>
-        <a className="btn-floating btn-large waves-effect waves-light red">
-          <i className="material-icons" onClick={this.loadPage}>add</i>
+        <a className='btn-floating btn-large waves-effect waves-light red'>
+          <i className='material-icons' onClick={this.loadPage}>add</i>
         </a>
       </div>
 
