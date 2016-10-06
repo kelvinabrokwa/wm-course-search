@@ -53,7 +53,7 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    fetch('http://ec2-52-207-245-202.compute-1.amazonaws.com/courses')
+    fetch('https://wm-course-data.herokuapp.com/courses')
       .then(res => res.json())
       .then(data => {
         data = flatten(data);
